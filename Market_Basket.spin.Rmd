@@ -1,0 +1,103 @@
+---
+title: Market_Basket.R
+author: Ade Ahmad Faizal
+date: '2025-07-26'
+
+---
+
+```{r}
+library(Matrix)
+library(arules)
+library(grid)
+library(arulesViz)
+
+# Contoh 1 #
+data1 <- list(c("A"),c("A","B"))
+data1
+
+## Mengubah list menjadi objek "transactions"
+data1.tran <- as(data1,"transactions")
+data1.tran
+
+## melihat dimensi
+dim(data1)
+
+## memeriksa kelas objek
+class(data1.tran)
+
+## Menampilkan tabel frekuensi kemunculan bersama antar item
+crossTable(data1.tran)
+
+## Menjalankan algoritma Apriori dengan support dan confidence minimum
+data1.ap <- apriori(data1.tran, parameter = list(support = 0.2, confidence = 0.2))
+
+## Menampilkan aturan yang ditemukan
+inspect(sort(data1.ap))
+
+## Mengubah hasil aturan menjadi data frame
+as(data1.ap, "data.frame")
+
+## Visualiasai aturan sebagai grafik
+plot(data1.ap, method = "graph", control = list(engine = "igraph"))
+
+# Contoh 2 #
+data2 <- list(c("A","B"),c("A","c"),c("c"))
+data2.tran <- as(data2, "transactions")
+data2.tran
+as(data2.tran, "data.frame")
+
+data2.ap <- apriori(data2.tran, parameter = list(support = 0.2, confidence = 0.2))
+inspect(sort(data2.ap))
+
+crossTable(data2.tran)
+crossTable(data2.tran, sort=T)
+crossTable(data2.tran, measure='lift', sort=T)
+
+summary(data2.tran)
+itemFrequency(data2.tran)
+
+plot(head(sort(data2.ap, by = "lift"), 5), method = "graph")
+
+# Analisis Data Grosir #
+## import data
+grosir <- read.csv("C:\\Users\\Ade Ahmad Faizal\\Downloads\\KS01A.csv")
+head(grosir)
+dim(grosir)
+
+trans <- as(split(grosir[,"NAMA"], grosir[,"NO"]), "transactions")
+trans
+
+itemFrequencyPlot(trans, type="absolute", topN=10)
+tabel <- crossTable(trans, sort=TRUE)
+tabel
+tabel[1:4,1:4]
+summary(trans)
+
+rules <- apriori(trans, parameter = list(support = 0.01, confidence = 0.2))
+rules
+inspect(sort(rules))
+
+crossTable(trans, measure='lift', sort=TRUE) [1:5, 1:5]
+
+plot(sort(rules, by = "lift"), method = "graph", control = list(engine = "igraph"))
+
+rules2 <- apriori(trans,
+                  parameter = list(support = 0.001, confidence = 0.05),
+                  appearance = list(default = "rhs", lhs = c("FILMA POUCH 1 LT"))
+)
+
+inspect(sort(rules2))
+
+plot(rules2, method = "graph", control = list(engine = "igraph"))
+
+# Opsi 1: Plot standar (scatterplot)
+plot(rules2)
+
+# Opsi 2: Plot graph (konsisten dengan plot sebelumnya)
+plot(rules2, method = "graph")
+
+```
+
+
+
+
